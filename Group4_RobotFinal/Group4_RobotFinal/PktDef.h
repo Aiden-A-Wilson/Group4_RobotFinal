@@ -33,20 +33,19 @@ class PktDef {
 		unsigned char CRC;					//Cyclic Redundancy Check
 
 	}Packet;
-	
-	struct DriveBody {
-		unsigned char Direction;
-		unsigned char Duration;
-		unsigned char Speed;
-
-	};
 
 	char* RawBuffer;
 
 public:
+	struct DriveBody {
+		unsigned char Direction;
+		unsigned char Duration;
+		unsigned char Speed;
+	};
 
 	PktDef();
 	PktDef(char* src);
+	~PktDef();
 
 	void SetCmd(CmdType);
 	void SetBodyData(char*, int);

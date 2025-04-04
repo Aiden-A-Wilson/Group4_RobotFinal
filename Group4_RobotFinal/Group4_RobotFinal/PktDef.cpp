@@ -1,20 +1,39 @@
 #include "PktDef.h"
+#include <bitset>
 
 PktDef::PktDef() {
 
 	memset(&Packet.Head, 0, HEADERSIZE);
 	Packet.Data = nullptr;
 	Packet.CRC = 0;
-
+	RawBuffer = nullptr;
 }
 PktDef::PktDef(char* src) {
-
 	RawBuffer = nullptr;
 
 	memcpy(&Packet.Head, src, HEADERSIZE);
+
+	if (Packet.Data != nullptr) {
+		delete[] Packet.Data;
+		Packet.Data = nullptr;
+	}
+
+	Packet.Data = new char[Packet.Head.Length];
+
 	memcpy(Packet.Data, src + HEADERSIZE, Packet.Head.Length);
 	memcpy(&Packet.CRC, src + HEADERSIZE + Packet.Head.Length, sizeof(Packet.CRC));
 
+}
+
+PktDef::~PktDef()
+{
+	if (Packet.Data != nullptr) {
+		delete[] Packet.Data;
+	}
+
+	if (RawBuffer != nullptr) {
+		delete[] RawBuffer;
+	}
 }
 
 void PktDef::SetCmd(CmdType Type) {
@@ -39,12 +58,11 @@ void PktDef::SetBodyData(char* srcData, int Size) {
 		Packet.Data = nullptr;
 	}
 
-	Packet.Data = new char[Size + 1];
+	Packet.Data = new char[Size];
 
 	memcpy(Packet.Data, srcData, Size);
 
 	Packet.Head.Length = Size;
-	Packet.Data[Size] = '\0';
 }
 void PktDef::SetPktCount(int Count) {
 	Packet.Head.PktCount = Count++;
@@ -63,6 +81,7 @@ CmdType PktDef::GetCmd() {
 	}
 	else {
 		std::cout << " GET CmdType went wrong" << std::endl;
+		return (CmdType)-1;
 	}
 }
 bool PktDef::GetAck() {
@@ -84,12 +103,61 @@ int PktDef::GetPktCount() {
 }
 
 bool PktDef::CheckCRC(char* src, int Size) {
+	struct CmdPacket pkt = { 0 };
 
+	memcpy(&pkt.Head, src, HEADERSIZE);
+	pkt.Data = nullptr;
 
+	if (pkt.Head.Length > 0) {
+		pkt.Data = new char[pkt.Head.Length];
+		memcpy(pkt.Data, src + HEADERSIZE, pkt.Head.Length);
+	}
+
+	memcpy(&pkt.CRC, src + HEADERSIZE + pkt.Head.Length, sizeof(pkt.CRC));
+
+	unsigned char calculatedCrc = 0;
+
+	calculatedCrc += std::bitset<8>(pkt.Head.PktCount).count();
+	calculatedCrc += std::bitset<4>(pkt.Head.Drive).count();
+	calculatedCrc += std::bitset<4>(pkt.Head.Status).count();
+	calculatedCrc += std::bitset<4>(pkt.Head.Sleep).count();
+	calculatedCrc += std::bitset<4>(pkt.Head.Ack).count();
+	calculatedCrc += std::bitset<4>(pkt.Head.Padding).count();
+	calculatedCrc += std::bitset<8>(pkt.Head.Length).count();
+
+	if (pkt.Data != nullptr) {
+		struct DriveBody body = { 0 };
+		memcpy(&body, pkt.Data, sizeof(struct DriveBody));
+		calculatedCrc += std::bitset<8>(body.Direction).count();
+		calculatedCrc += std::bitset<8>(body.Duration).count();
+		calculatedCrc += std::bitset<8>(body.Speed).count();
+	}
+
+	delete[] pkt.Data;
+
+	return pkt.CRC == calculatedCrc;
 }
+
 void PktDef::CalcCRC() {
+	unsigned char crc = 0;
 
+	crc += std::bitset<8>(Packet.Head.PktCount).count();
+	crc += std::bitset<4>(Packet.Head.Drive).count();
+	crc += std::bitset<4>(Packet.Head.Status).count();
+	crc += std::bitset<4>(Packet.Head.Sleep).count();
+	crc += std::bitset<4>(Packet.Head.Ack).count();
+	crc += std::bitset<4>(Packet.Head.Padding).count();
+	crc += std::bitset<8>(Packet.Head.Length).count();
 
+	if (Packet.Data != nullptr) {
+		struct DriveBody body = { 0 };
+		memcpy(&body, Packet.Data, sizeof(struct DriveBody));
+		crc += std::bitset<8>(body.Direction).count();
+		crc += std::bitset<8>(body.Duration).count();
+		crc += std::bitset<8>(body.Speed).count();
+	}
+
+	Packet.CRC = crc;
 }
 
 char* PktDef::GenPacket() {
