@@ -10,38 +10,42 @@
 
 #define HEADERSIZE 6
 
+// enum for robot command types
 enum CmdType { DRIVE, SLEEP, RESPONSE };
 
-class PktDef {	
+// The Header Information
+struct Header {
+	unsigned short int PktCount;
 
+	unsigned char Drive : 1;
+	unsigned char Status : 1;
+	unsigned char Sleep : 1;
+	unsigned char Ack : 1;
+	unsigned char Padding : 4;
+
+	unsigned short int Length;
+};
+
+// The Driving Parameters
+struct DriveBody {
+	unsigned char Direction;
+	unsigned char Duration;
+	unsigned char Speed;
+};
+
+class PktDef {	
+	// Our packet
 	struct CmdPacket {
 
-		struct Header {
-			unsigned short int PktCount;
-
-			unsigned char Drive : 1;
-			unsigned char Status : 1;
-			unsigned char Sleep : 1;
-			unsigned char Ack : 1;
-			unsigned char Padding : 4;
-
-			unsigned short int Length;
-
-		} Head;
-
-		char* Data;							//The data bytes
-		unsigned char CRC;					//Cyclic Redundancy Check
+		Header Head;
+		char* Data;
+		unsigned char CRC;
 
 	}Packet;
-
+	// a buffer to send packet
 	char* RawBuffer;
 
 public:
-	struct DriveBody {
-		unsigned char Direction;
-		unsigned char Duration;
-		unsigned char Speed;
-	};
 
 	PktDef();
 	PktDef(char* src);

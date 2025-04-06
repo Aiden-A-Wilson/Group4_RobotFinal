@@ -1,13 +1,14 @@
 #include "PktDef.h"
 #include <bitset>
 
+// Constructor: initializes the packet with default values
 PktDef::PktDef() {
-
 	memset(&Packet.Head, 0, HEADERSIZE);
 	Packet.Data = nullptr;
 	Packet.CRC = 0;
 	RawBuffer = nullptr;
 }
+// Constructor: initializes the packet based on a source
 PktDef::PktDef(char* src) {
 	RawBuffer = nullptr;
 
@@ -24,7 +25,7 @@ PktDef::PktDef(char* src) {
 	memcpy(&Packet.CRC, src + HEADERSIZE + Packet.Head.Length, sizeof(Packet.CRC));
 
 }
-
+// Destructor: clean up
 PktDef::~PktDef()
 {
 	if (Packet.Data != nullptr) {
@@ -36,8 +37,9 @@ PktDef::~PktDef()
 	}
 }
 
+// Set the command type in the packet header
 void PktDef::SetCmd(CmdType Type) {
-
+	// Depending on the command type, set that bit
 	if (Type == DRIVE) {
 		Packet.Head.Drive = 1;
 	}
@@ -51,6 +53,7 @@ void PktDef::SetCmd(CmdType Type) {
 		std::cout << "SET CmdType went wrong" << std::endl;
 	}
 }
+// Set the body data of the packet with new data
 void PktDef::SetBodyData(char* srcData, int Size) {
 
 	if (Packet.Data) {
@@ -64,10 +67,11 @@ void PktDef::SetBodyData(char* srcData, int Size) {
 
 	Packet.Head.Length = Size;
 }
+// Set the packet count
 void PktDef::SetPktCount(int Count) {
-	Packet.Head.PktCount = Count++;
+	Packet.Head.PktCount = Count;
 }
-
+// Get the command type from the packet header
 CmdType PktDef::GetCmd() {
 
 	if (Packet.Head.Drive == 1) {
@@ -84,6 +88,7 @@ CmdType PktDef::GetCmd() {
 		return (CmdType)-1;
 	}
 }
+// Get the acknowledgment from the packet header
 bool PktDef::GetAck() {
 
 	if (Packet.Head.Ack == 1)
@@ -92,16 +97,19 @@ bool PktDef::GetAck() {
 		return false;
 
 }
+// Get the length of the packet data
 int PktDef::GetLength() {
 	return Packet.Head.Length;
 }
+// Get the body data of the packet
 char* PktDef::GetBodyData() {
 	return Packet.Data;
 }
+// Get the packet count from the header
 int PktDef::GetPktCount() {
 	return Packet.Head.PktCount;
 }
-
+// Check if the CRC is valid by calculating it and comparing to the one in the packet
 bool PktDef::CheckCRC(char* src, int Size) {
 	struct CmdPacket pkt = { 0 };
 
@@ -137,7 +145,7 @@ bool PktDef::CheckCRC(char* src, int Size) {
 
 	return pkt.CRC == calculatedCrc;
 }
-
+// Calculate the CRC for the current packet
 void PktDef::CalcCRC() {
 	unsigned char crc = 0;
 
@@ -159,7 +167,7 @@ void PktDef::CalcCRC() {
 
 	Packet.CRC = crc;
 }
-
+// Generate a packet 
 char* PktDef::GenPacket() {
 	
 	if (RawBuffer) {
