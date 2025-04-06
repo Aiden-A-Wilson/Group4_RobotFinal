@@ -8,7 +8,7 @@
 #define RIGHT 3
 #define LEFT 4
 
-#define HEADERSIZE 6
+#define HEADERSIZE 4
 
 // enum for robot command types
 enum CmdType { DRIVE, SLEEP, RESPONSE };
@@ -23,7 +23,7 @@ struct Header {
 	unsigned char Ack : 1;
 	unsigned char Padding : 4;
 
-	unsigned short int Length;
+	unsigned char Length;
 };
 
 // The Driving Parameters

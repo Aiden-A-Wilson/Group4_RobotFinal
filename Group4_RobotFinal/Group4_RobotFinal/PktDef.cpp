@@ -125,6 +125,7 @@ bool PktDef::CheckCRC(char* src, int Size) {
 
 	unsigned char calculatedCrc = 0;
 
+	// Add all the (1) bits from all fields.
 	calculatedCrc += std::bitset<8>(pkt.Head.PktCount).count();
 	calculatedCrc += std::bitset<4>(pkt.Head.Drive).count();
 	calculatedCrc += std::bitset<4>(pkt.Head.Status).count();
@@ -133,6 +134,7 @@ bool PktDef::CheckCRC(char* src, int Size) {
 	calculatedCrc += std::bitset<4>(pkt.Head.Padding).count();
 	calculatedCrc += std::bitset<8>(pkt.Head.Length).count();
 
+	// Adds the bits from the data is there are any.
 	if (pkt.Data != nullptr) {
 		struct DriveBody body = { 0 };
 		memcpy(&body, pkt.Data, sizeof(struct DriveBody));
@@ -149,6 +151,7 @@ bool PktDef::CheckCRC(char* src, int Size) {
 void PktDef::CalcCRC() {
 	unsigned char crc = 0;
 
+	// Add all the (1) bits from all fields.
 	crc += std::bitset<8>(Packet.Head.PktCount).count();
 	crc += std::bitset<4>(Packet.Head.Drive).count();
 	crc += std::bitset<4>(Packet.Head.Status).count();
@@ -157,6 +160,7 @@ void PktDef::CalcCRC() {
 	crc += std::bitset<4>(Packet.Head.Padding).count();
 	crc += std::bitset<8>(Packet.Head.Length).count();
 
+	// Adds the bits from the data is there are any.
 	if (Packet.Data != nullptr) {
 		struct DriveBody body = { 0 };
 		memcpy(&body, Packet.Data, sizeof(struct DriveBody));
