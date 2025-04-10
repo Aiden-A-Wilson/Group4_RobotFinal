@@ -1,7 +1,6 @@
 #pragma once
 #include <memory>
 #include <iostream>
-#include <fstream>
 
 #define FORWARD 1
 #define BACKWORD 2
@@ -9,11 +8,13 @@
 #define LEFT 4
 
 #define HEADERSIZE 4
+#define BODYSIZE 3
 
 // enum for robot command types
 enum CmdType { DRIVE, SLEEP, RESPONSE };
 
 // The Header Information
+#pragma pack(push,1)
 struct Header {
 	unsigned short int PktCount;
 
@@ -25,6 +26,7 @@ struct Header {
 
 	unsigned char Length;
 };
+#pragma pack(pop)
 
 // The Driving Parameters
 struct DriveBody {
@@ -41,7 +43,7 @@ class PktDef {
 		char* Data;
 		unsigned char CRC;
 
-	}Packet;
+	} Packet;
 	// a buffer to send packet
 	char* RawBuffer;
 

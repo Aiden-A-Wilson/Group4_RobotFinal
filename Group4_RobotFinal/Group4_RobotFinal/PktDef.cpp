@@ -10,6 +10,7 @@ PktDef::PktDef() {
 }
 // Constructor: initializes the packet based on a source
 PktDef::PktDef(char* src) {
+	Packet = { 0 };
 	RawBuffer = nullptr;
 
 	memcpy(&Packet.Head, src, HEADERSIZE);
@@ -65,7 +66,7 @@ void PktDef::SetBodyData(char* srcData, int Size) {
 
 	memcpy(Packet.Data, srcData, Size);
 
-	Packet.Head.Length = Size;
+	Packet.Head.Length = HEADERSIZE + Size + sizeof(Packet.CRC);
 }
 // Set the packet count
 void PktDef::SetPktCount(int Count) {
@@ -183,13 +184,18 @@ char* PktDef::GenPacket() {
 	//calcualte CRC HERE
 	CalcCRC();
 
-	int size = HEADERSIZE + Packet.Head.Length + sizeof(Packet.CRC);
+	int crcSize = sizeof(Packet.CRC);
+	int bodySize = Packet.Head.Length - HEADERSIZE - crcSize;
 
-	RawBuffer = new char[size];
+	RawBuffer = new char[Packet.Head.Length];
 
 	memcpy(RawBuffer, &Packet.Head, HEADERSIZE);
-	memcpy(RawBuffer + HEADERSIZE, Packet.Data, Packet.Head.Length);
-	memcpy(RawBuffer + HEADERSIZE + Packet.Head.Length, &Packet.CRC, sizeof(Packet.CRC));
+	
+	if (Packet.Data != nullptr) {
+		memcpy(RawBuffer + HEADERSIZE, Packet.Data, bodySize);
+	}
+	
+	memcpy(RawBuffer + HEADERSIZE + bodySize, &Packet.CRC, crcSize);
 
 	return RawBuffer;
 }
