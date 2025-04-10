@@ -43,8 +43,9 @@ MySocket::MySocket(SocketType socketType, string ip, unsigned int port, Connecti
 	else if (socketType == CLIENT) {
 		ConnectionSocket = socket(AF_INET, sock, protocol);
 		if (ConnectionSocket == INVALID_SOCKET) {
-
+			cout << "Unable to create ConnectionSocket" << endl;
 		}
+
 	}
 
 	
@@ -61,7 +62,6 @@ void MySocket::ConnectTCP() {
 	}
 
 	
-
 }
 void MySocket::DisconnectTCP() {
 	closesocket(ConnectionSocket);
