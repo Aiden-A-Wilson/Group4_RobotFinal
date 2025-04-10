@@ -13,17 +13,21 @@ PktDef::PktDef(char* src) {
 	Packet = { 0 };
 	RawBuffer = nullptr;
 
+	int crcSize = sizeof(Packet.CRC);
+
 	memcpy(&Packet.Head, src, HEADERSIZE);
+
+	int bodySize = Packet.Head.Length - HEADERSIZE - crcSize;
 
 	if (Packet.Data != nullptr) {
 		delete[] Packet.Data;
 		Packet.Data = nullptr;
 	}
 
-	Packet.Data = new char[Packet.Head.Length];
+	Packet.Data = new char[bodySize];
 
-	memcpy(Packet.Data, src + HEADERSIZE, Packet.Head.Length);
-	memcpy(&Packet.CRC, src + HEADERSIZE + Packet.Head.Length, sizeof(Packet.CRC));
+	memcpy(Packet.Data, src + HEADERSIZE, bodySize);
+	memcpy(&Packet.CRC, src + HEADERSIZE + bodySize, crcSize);
 
 }
 // Destructor: clean up
