@@ -4,6 +4,7 @@
 #pragma comment(lib, "Ws2_32.lib")
 
 #include <iostream>
+#include <string>
 #include <cstring> 
 
 #define DEFAULT_SIZE 1024

@@ -76,7 +76,7 @@ int MySocket::GetData(char* src) {
 
 }
 string MySocket::GetIPAddr() {
-	return SvrAddr.sin_addr.s_addr
+	return to_string(SvrAddr.sin_addr.s_addr);
 }
 void MySocket::SetIPAddr(string ip) {
 	if (WelcomeSocket == INVALID_SOCKET || ConnectionSocket == INVALID_SOCKET)
