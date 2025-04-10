@@ -7,25 +7,41 @@ MySocket::MySocket(SocketType socketType, string ip, unsigned int port, Connecti
 		bufferSize = DEFAULT_SIZE;
 	}
 
-	WelcomeSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (WelcomeSocket == INVALID_SOCKET) {
-		cout << "Unable to create WelcomeSocket" << endl;
-	}
+	SvrAddr.sin_family = AF_INET;
+	SetIPAddr(ip);
+	setPort(port);
+	int addrLen = sizeof(SvrAddr);
+	connectionType = connType;
 
-	if (connType == UDP) {
-		ConnectionSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	} else if (connType == TCP) {
-		ConnectionSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	}
+	int sock = connType == TCP ? SOCK_STREAM : SOCK_DGRAM;
+	int protocol = connType == TCP ? IPPROTO_TCP : IPPROTO_UDP;
 
-	if (ConnectionSocket == INVALID_SOCKET) {
-		cout << "Unable to create ConnectionSocket" << endl;
-	}
+	if (socketType == SERVER) {
+		WelcomeSocket = socket(AF_INET, sock, protocol);
+		if (WelcomeSocket == INVALID_SOCKET) {
+			cout << "Unable to create WelcomeSocket" << endl;
+		}
 
-	struct sockaddr_in serverAddress;
-	serverAddress.sin_family = AF_INET;
-	serverAddress.sin_addr.s_addr = inet_addr(ip.c_str());
-	serverAddress.sin_port = htons(port);
+		int binded = bind(WelcomeSocket, (struct sockaddr*)&SvrAddr, addrLen);
+		if (binded == -1) {
+			cout << "Unable to bind welcome socket" << endl;
+		}
+
+		if (protocol == IPPROTO_TCP) {
+			int listened = listen(WelcomeSocket, 1);
+			if (listened == -1) {
+				cout << "Unable to listen for connections" << endl;
+			}
+		}
+	}
+	else if (socketType == CLIENT) {
+		if (connType == TCP) {
+
+		}
+		else if (connType == UDP) {
+
+		}
+	}
 
 	Buffer = nullptr;
 	Buffer = new char[bufferSize];
@@ -36,7 +52,11 @@ MySocket::~MySocket() {
 	}
 }
 void MySocket::ConnectTCP() {
+	if (connectionType == UDP) {
+		return;
+	}
 
+	
 
 }
 void MySocket::DisconnectTCP() {
@@ -56,10 +76,11 @@ string MySocket::GetIPAddr() {
 
 }
 void MySocket::SetIPAddr(string ip) {
-	
+	SvrAddr.sin_addr.s_addr = inet_addr(ip.c_str());
 }
 void MySocket::setPort(int port) {
-	if (WelcomeSocket == ) {
+	SvrAddr.sin_port = htons(port);
+	if (WelcomeSocket == INVALID_SOCKET) {
 
 	}
 	else {
@@ -74,6 +95,7 @@ SocketType MySocket::GetType() {
 	return mySocket;
 }
 void MySocket::SetType(SocketType type) {
+
 	if (type == CLIENT)
 		mySocket = CLIENT;
 	else if (type == SERVER)
