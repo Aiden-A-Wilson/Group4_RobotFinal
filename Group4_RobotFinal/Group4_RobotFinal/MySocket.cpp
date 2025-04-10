@@ -7,11 +7,15 @@ MySocket::MySocket(SocketType socketType, string ip, unsigned int port, Connecti
 		bufferSize = DEFAULT_SIZE;
 	}
 
+	WelcomeSocket = INVALID_SOCKET;
+	ConnectionSocket = INVALID_SOCKET;
+
 	SvrAddr.sin_family = AF_INET;
 	SetIPAddr(ip);
 	setPort(port);
 	int addrLen = sizeof(SvrAddr);
 	connectionType = connType;
+	Buffer = nullptr;
 
 	int sock = connType == TCP ? SOCK_STREAM : SOCK_DGRAM;
 	int protocol = connType == TCP ? IPPROTO_TCP : IPPROTO_UDP;
@@ -32,18 +36,18 @@ MySocket::MySocket(SocketType socketType, string ip, unsigned int port, Connecti
 			if (listened == -1) {
 				cout << "Unable to listen for connections" << endl;
 			}
+
+			ConnectionSocket = accept(WelcomeSocket, (struct sockaddr*)&SvrAddr, &addrLen);
 		}
 	}
 	else if (socketType == CLIENT) {
-		if (connType == TCP) {
-
-		}
-		else if (connType == UDP) {
+		ConnectionSocket = socket(AF_INET, sock, protocol);
+		if (ConnectionSocket == INVALID_SOCKET) {
 
 		}
 	}
 
-	Buffer = nullptr;
+	
 	Buffer = new char[bufferSize];
 }
 MySocket::~MySocket() {
@@ -52,7 +56,7 @@ MySocket::~MySocket() {
 	}
 }
 void MySocket::ConnectTCP() {
-	if (connectionType == UDP) {
+	if (connectionType == UDP || WelcomeSocket != INVALID_SOCKET) {
 		return;
 	}
 
@@ -72,21 +76,19 @@ int MySocket::GetData(char* src) {
 
 }
 string MySocket::GetIPAddr() {
-
-
+	return SvrAddr.sin_addr.s_addr
 }
 void MySocket::SetIPAddr(string ip) {
-	SvrAddr.sin_addr.s_addr = inet_addr(ip.c_str());
+	if (WelcomeSocket == INVALID_SOCKET || ConnectionSocket == INVALID_SOCKET)
+		SvrAddr.sin_addr.s_addr = inet_addr(ip.c_str());
+	else 
+		cout << "cannot change ip address socket is already open or connected" << endl;
 }
 void MySocket::setPort(int port) {
-	SvrAddr.sin_port = htons(port);
-	if (WelcomeSocket == INVALID_SOCKET) {
-
-	}
-	else {
-
-	}
-	
+	if (WelcomeSocket == INVALID_SOCKET || ConnectionSocket == INVALID_SOCKET)
+		SvrAddr.sin_port = htons(port);
+	else 
+		cout << "cannot change port socket is already open or connected" << endl;
 }
 int MySocket::GetPort() {
 	return Port;
@@ -95,9 +97,12 @@ SocketType MySocket::GetType() {
 	return mySocket;
 }
 void MySocket::SetType(SocketType type) {
-
-	if (type == CLIENT)
-		mySocket = CLIENT;
-	else if (type == SERVER)
-		mySocket = SERVER;
+	if (WelcomeSocket == INVALID_SOCKET || ConnectionSocket == INVALID_SOCKET) {
+		if (type == CLIENT)
+			mySocket = CLIENT;
+		else if (type == SERVER)
+			mySocket = SERVER;
+	}
+	else
+		cout << "cannot change type socket is already open or connected" << endl;
 }
