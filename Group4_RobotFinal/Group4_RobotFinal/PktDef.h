@@ -8,7 +8,7 @@
 #define LEFT 4
 
 #define HEADERSIZE 4
-#define BODYSIZE 3
+#define BODYSIZE 3//
 
 // enum for robot command types
 enum CmdType { DRIVE, SLEEP, RESPONSE };
