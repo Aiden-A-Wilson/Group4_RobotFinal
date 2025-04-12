@@ -38,5 +38,8 @@ public:
 	int GetPort();
 	SocketType GetType();
 	void SetType(SocketType);
+
+private:
+	bool CanSet();
 };
 
