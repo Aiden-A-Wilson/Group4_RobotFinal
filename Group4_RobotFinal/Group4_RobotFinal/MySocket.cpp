@@ -35,11 +35,23 @@ MySocket::MySocket(SocketType socketType, string ip, unsigned int port, Connecti
 
 		if (protocol == IPPROTO_TCP) {
 			int listened = listen(WelcomeSocket, 1);
-			if (listened == -1) {
+			if (listened != -1) {
+				cout << "TCP server waiting for connection..." << endl;
+
+				ConnectionSocket = accept(WelcomeSocket, (struct sockaddr*)&SvrAddr, &addrLen);
+				
+				if (ConnectionSocket == INVALID_SOCKET) {
+					bTCPConnect = false;
+					cout << "Unable to accept connection for WelcomeSocket";
+				}
+				else {
+					bTCPConnect = true;
+					cout << "Found Client!" << endl;
+				}
+			}
+			else {
 				cout << "Unable to listen for connections" << endl;
 			}
-
-			ConnectionSocket = accept(WelcomeSocket, (struct sockaddr*)&SvrAddr, &addrLen);
 		}
 	}
 	else if (mySocket == CLIENT) {
@@ -52,6 +64,7 @@ MySocket::MySocket(SocketType socketType, string ip, unsigned int port, Connecti
 	
 	Buffer = new char[bufferSize];
 }
+
 MySocket::~MySocket() {
 	if (Buffer != nullptr) {
 		delete[] Buffer;
@@ -60,22 +73,34 @@ MySocket::~MySocket() {
 	closesocket(ConnectionSocket);
 	closesocket(WelcomeSocket);
 }
+
 void MySocket::ConnectTCP() {
-	if (connectionType == UDP || WelcomeSocket != INVALID_SOCKET) {
+	if (connectionType == UDP || bTCPConnect) {
 		return;
 	}
 
 	int addrLen = sizeof(SvrAddr);
 	int connected = connect(ConnectionSocket, (struct sockaddr*)&SvrAddr, addrLen);
+	bTCPConnect = true;
 	if (connected == SOCKET_ERROR) {
+		bTCPConnect = false;
 		cout << "Unable to connect to TCP server with ConnectionSocket" << endl;
 	}
 }
 
 void MySocket::DisconnectTCP() {
-	closesocket(ConnectionSocket);
+	if (connectionType == UDP) {
+		return;
+	}
 
+	closesocket(ConnectionSocket);
+	bTCPConnect = false;
 }
+
+bool MySocket::IsConnectedTCP() {
+	return bTCPConnect;
+}
+
 void MySocket::SendData(const char* data, int size) {
 	if (connectionType == TCP) {
 		send(ConnectionSocket, data, size, 0);
@@ -85,6 +110,7 @@ void MySocket::SendData(const char* data, int size) {
 		sendto(ConnectionSocket, data, size, 0, (struct sockaddr*)&SvrAddr, addrLen);
 	}
 }
+
 int MySocket::GetData(char* RxBuffer) {
 	int bytesWritten = 0;
 	if (connectionType == TCP) {
@@ -103,23 +129,32 @@ string MySocket::GetIPAddr() {
 	return to_string(SvrAddr.sin_addr.s_addr);
 }
 void MySocket::SetIPAddr(string ip) {
-	if (CanSet())
+	if (CanSet()) {
 		SvrAddr.sin_addr.s_addr = inet_addr(ip.c_str());
-	else 
+	}
+	else {
 		cout << "cannot change ip address socket is already open or connected" << endl;
+	}
 }
+
 void MySocket::setPort(int port) {
-	if (CanSet())
+	if (CanSet()) {
+		Port = port;
 		SvrAddr.sin_port = htons(port);
-	else 
+	}
+	else {
 		cout << "cannot change port socket is already open or connected" << endl;
+	}
 }
+
 int MySocket::GetPort() {
 	return Port;
 }
+
 SocketType MySocket::GetType() {
 	return mySocket;
 }
+
 void MySocket::SetType(SocketType type) {
 	if (CanSet()) {
 		mySocket = type;
@@ -130,6 +165,10 @@ void MySocket::SetType(SocketType type) {
 
 bool MySocket::CanSet()
 {
+	if (connectionType == TCP) {
+		return !bTCPConnect;
+	}
+
 	if (mySocket == SERVER) {
 		return WelcomeSocket == INVALID_SOCKET && ConnectionSocket == INVALID_SOCKET;
 	}

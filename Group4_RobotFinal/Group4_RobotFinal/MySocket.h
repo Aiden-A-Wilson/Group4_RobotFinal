@@ -30,6 +30,7 @@ public:
 	~MySocket();
 	void ConnectTCP();
 	void DisconnectTCP();
+	bool IsConnectedTCP();
 	void SendData(const char*, int);
 	int GetData(char*);
 	std::string GetIPAddr();

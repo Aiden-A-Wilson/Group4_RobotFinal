@@ -142,8 +142,7 @@ namespace PacketTests
 			pkt.CalcCRC();
 
 			// Assert
-			int totalSize = HEADERSIZE + pkt.GetLength() + sizeof(unsigned char);
-			Assert::IsTrue(pkt.CheckCRC(pkt.GenPacket(), totalSize));
+			Assert::IsTrue(pkt.CheckCRC(pkt.GenPacket(), pkt.GetLength()));
 		}
 
 		/// <summary>
@@ -181,14 +180,13 @@ namespace PacketTests
 			PktDef newPkt = PktDef(pkt.GenPacket());
 			
 			// Assert
-			int size = HEADERSIZE + newPkt.GetLength() + sizeof(unsigned char);
 			struct DriveBody actual = { 0 };
 			memcpy(&actual, newPkt.GetBodyData(), sizeof(actual));
 			Assert::AreEqual((int)DRIVE, (int)newPkt.GetCmd());
 			Assert::AreEqual((unsigned char)1, actual.Direction);
 			Assert::AreEqual((unsigned char)10, actual.Duration);
 			Assert::AreEqual((unsigned char)80, actual.Speed);
-			Assert::IsTrue(newPkt.CheckCRC(newPkt.GenPacket(), size));
+			Assert::IsTrue(newPkt.CheckCRC(newPkt.GenPacket(), newPkt.GetLength()));
 		}
 	};
 }

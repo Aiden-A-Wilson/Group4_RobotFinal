@@ -121,12 +121,15 @@ bool PktDef::CheckCRC(char* src, int Size) {
 	memcpy(&pkt.Head, src, HEADERSIZE);
 	pkt.Data = nullptr;
 
-	if (pkt.Head.Length > 0) {
-		pkt.Data = new char[pkt.Head.Length];
-		memcpy(pkt.Data, src + HEADERSIZE, pkt.Head.Length);
+	int crcSize = sizeof(pkt.CRC);
+	int bodySize = pkt.Head.Length - HEADERSIZE - crcSize;
+
+	if (bodySize > 0) {
+		pkt.Data = new char[bodySize];
+		memcpy(pkt.Data, src + HEADERSIZE, bodySize);
 	}
 
-	memcpy(&pkt.CRC, src + HEADERSIZE + pkt.Head.Length, sizeof(pkt.CRC));
+	memcpy(&pkt.CRC, src + HEADERSIZE + bodySize, crcSize);
 
 	unsigned char calculatedCrc = 0;
 
