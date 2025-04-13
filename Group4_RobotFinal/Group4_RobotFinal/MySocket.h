@@ -24,6 +24,8 @@ class MySocket
 	int Port;
 	bool bTCPConnect;
 	int MaxSize;
+	struct sockaddr_in LastSender;
+	int LastSenderLength;
 
 public:
 	MySocket(SocketType, std::string, unsigned int, ConnectionType, unsigned int);

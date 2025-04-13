@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Socket_Tests", "Socket_Test
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Socket_ServerTest", "Socket_ServerTest\Socket_ServerTest.vcxproj", "{81951974-AE2E-455E-9F25-8D7F8584BC77}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Socket_ClientTest", "Sockt_ClientTest\Sockt_ClientTest.vcxproj", "{07E8B456-76A9-45B7-82F2-777A2C8BB985}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -51,6 +53,14 @@ Global
 		{81951974-AE2E-455E-9F25-8D7F8584BC77}.Release|x64.Build.0 = Release|x64
 		{81951974-AE2E-455E-9F25-8D7F8584BC77}.Release|x86.ActiveCfg = Release|Win32
 		{81951974-AE2E-455E-9F25-8D7F8584BC77}.Release|x86.Build.0 = Release|Win32
+		{07E8B456-76A9-45B7-82F2-777A2C8BB985}.Debug|x64.ActiveCfg = Debug|x64
+		{07E8B456-76A9-45B7-82F2-777A2C8BB985}.Debug|x64.Build.0 = Debug|x64
+		{07E8B456-76A9-45B7-82F2-777A2C8BB985}.Debug|x86.ActiveCfg = Debug|Win32
+		{07E8B456-76A9-45B7-82F2-777A2C8BB985}.Debug|x86.Build.0 = Debug|Win32
+		{07E8B456-76A9-45B7-82F2-777A2C8BB985}.Release|x64.ActiveCfg = Release|x64
+		{07E8B456-76A9-45B7-82F2-777A2C8BB985}.Release|x64.Build.0 = Release|x64
+		{07E8B456-76A9-45B7-82F2-777A2C8BB985}.Release|x86.ActiveCfg = Release|Win32
+		{07E8B456-76A9-45B7-82F2-777A2C8BB985}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

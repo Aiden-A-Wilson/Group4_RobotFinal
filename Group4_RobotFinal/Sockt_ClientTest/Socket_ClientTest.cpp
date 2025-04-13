@@ -1,8 +1,9 @@
-// Socket_ServerTest.cpp : This file contains the 'main' function. Program execution begins and ends there.
+// Sockt_ClientTest.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
 #include <iostream>
 #include "MySocket.h"
+#include <Windows.h>
 
 using namespace std;
 
@@ -16,6 +17,8 @@ int main(int argc, char* argv[])
         exit(EXIT_FAILURE);
     }
 
+    Sleep(1000);
+
     ConnectionType conn = TCP;
     if (strcmp(argv[2], "TCP") == 0) {
         conn = TCP;
@@ -24,23 +27,16 @@ int main(int argc, char* argv[])
         conn = UDP;
     }
 
-    MySocket server = MySocket(SERVER, "127.0.0.1", stoi(argv[1]), conn, 1024);
+    MySocket client = MySocket(CLIENT, "127.0.0.1", stoi(argv[1]), conn, 1024);
+
+    if (conn == TCP) {
+        client.ConnectTCP();
+    }
 
     if (argc > 3 && strcmp(argv[3], "get_message") == 0) {
         char message[] = "Hello World!";
-        server.SendData(message, 13);
+        client.SendData(message, 13);
         cout << "Sent message to client" << endl;
-    }
-
-    if (argc > 3 && strcmp(argv[3], "send_message") == 0) {
-        char buffer[1024] = { 0 };
-        server.GetData(buffer);
-
-        if (strcmp(buffer, "Message from client") == 0) {
-            char message[] = "Confirmed";
-            server.SendData(message, 10);
-            cout << "Sent message to client" << endl;
-        }
     }
 
     WSACleanup();

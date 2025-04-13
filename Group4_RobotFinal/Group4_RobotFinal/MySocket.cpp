@@ -17,12 +17,15 @@ MySocket::MySocket(SocketType socketType, std::string ip, unsigned int port, Con
 	setPort(port);
 	int addrLen = sizeof(SvrAddr);
 
+	LastSender.sin_family = AF_INET;
+	LastSender.sin_addr.s_addr = inet_addr(ip.c_str());
+	LastSender.sin_port = htons(port);
+	LastSenderLength = sizeof(LastSender);
+
 	int sock = connectionType == TCP ? SOCK_STREAM : SOCK_DGRAM;
 	int protocol = connectionType == TCP ? IPPROTO_TCP : IPPROTO_UDP;
 
 	if (mySocket == SERVER) {
-		
-
 		if (connectionType == TCP) {
 			WelcomeSocket = socket(AF_INET, sock, protocol);
 			if (WelcomeSocket == INVALID_SOCKET) {
@@ -78,7 +81,6 @@ MySocket::MySocket(SocketType socketType, std::string ip, unsigned int port, Con
 			}
 		}
 	}
-
 	
 	Buffer = new char[bufferSize];
 }
@@ -124,8 +126,7 @@ void MySocket::SendData(const char* data, int size) {
 		send(ConnectionSocket, data, size, 0);
 	}
 	else if (connectionType == UDP) {
-		int addrLen = sizeof(SvrAddr);
-		int s = sendto(ConnectionSocket, data, size, 0, (struct sockaddr*)&SvrAddr, addrLen);
+		sendto(ConnectionSocket, data, size, 0, (struct sockaddr*)&LastSender, LastSenderLength);
 	}
 }
 
@@ -135,9 +136,7 @@ int MySocket::GetData(char* RxBuffer) {
 		bytesWritten = recv(ConnectionSocket, Buffer, MaxSize, 0);
 	}
 	else if (connectionType == UDP) {
-		struct sockaddr_in senderAddr;
-		int addrLen = sizeof(senderAddr);
-		bytesWritten = recvfrom(ConnectionSocket, Buffer, MaxSize, 0, (struct sockaddr*)&senderAddr, &addrLen);
+		bytesWritten = recvfrom(ConnectionSocket, Buffer, MaxSize, 0, (struct sockaddr*)&LastSender, &LastSenderLength);
 	}
 
 	if (bytesWritten > 0) {
@@ -147,7 +146,7 @@ int MySocket::GetData(char* RxBuffer) {
 	return bytesWritten;
 }
 std::string MySocket::GetIPAddr() {
-	return std::to_string(SvrAddr.sin_addr.s_addr);
+	return inet_ntoa(SvrAddr.sin_addr);
 }
 void MySocket::SetIPAddr(std::string ip) {
 	if (CanSet()) {
@@ -190,5 +189,5 @@ bool MySocket::CanSet()
 		return !bTCPConnect;
 	}
 
-	return ConnectionSocket == INVALID_SOCKET;
+	return true;
 }

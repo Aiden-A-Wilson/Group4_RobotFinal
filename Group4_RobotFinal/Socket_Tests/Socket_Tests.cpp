@@ -6,8 +6,14 @@
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 void WinsockStart();
-void RunTcpServer(PROCESS_INFORMATION* pi, std::wstring commands);
-void CloseTcpServer(PROCESS_INFORMATION* pi);
+void RunServer(PROCESS_INFORMATION* pi, std::wstring commands);
+void RunClient(PROCESS_INFORMATION* pi, std::wstring commands);
+void CloseProcess(PROCESS_INFORMATION* pi);
+
+/*
+* NOTE: Please make sure the ENTIRE solution is built before running these tests.
+* These tests rely on an external application so make sure you antivirus does not flag it.
+*/
 
 namespace SocketTests
 {
@@ -15,49 +21,177 @@ namespace SocketTests
 	{
 	public:
 
-		TEST_METHOD(Client_TCP_CanConnectToServer)
+		TEST_METHOD(ConnectTCP_Client_TCP_ConnectsToRunningServer)
 		{
+			// Arrange
+			WinsockStart();
 			PROCESS_INFORMATION pi;
-			RunTcpServer(&pi, L" 7770 TCP");
-
+			RunServer(&pi, L"7770 TCP");
 			MySocket client = MySocket(CLIENT, "127.0.0.1", 7770, TCP, 1024);
+
+			// Act
 			client.ConnectTCP();
 			
+			// Assert
 			Assert::IsTrue(client.IsConnectedTCP());
 
-			CloseTcpServer(&pi);
+			// Cleanup
+			CloseProcess(&pi);
+			WSACleanup();
 		}
 
-		TEST_METHOD(Client_TCP_CanGetMessageFromServer)
+		TEST_METHOD(GetData_Client_TCP_ObtainsBytesFromServer)
 		{
+			// Arrange
+			WinsockStart();
 			PROCESS_INFORMATION pi;
-			RunTcpServer(&pi, L" 7771 TCP get_message");
-
+			RunServer(&pi, L"7771 TCP get_message");
 			MySocket client = MySocket(CLIENT, "127.0.0.1", 7771, TCP, 1024);
 			client.ConnectTCP();
-
 			char buffer[1024] = { 0 };
+
+			// Act
 			client.GetData(buffer);
 
+			// Assert
 			Assert::AreEqual(0, strcmp(buffer, "Hello World!"));
 
-			CloseTcpServer(&pi);
+			// Cleanup
+			CloseProcess(&pi);
+			WSACleanup();
 		}
 
-		TEST_METHOD(Client_UDP_CanGetMessageFromServer)
+		TEST_METHOD(GetData_Client_UDP_ObtainsBytesFromServer)
 		{
+			// Arrange
 			WinsockStart();
-
 			PROCESS_INFORMATION pi;
-			RunTcpServer(&pi, L" 7772 UDP get_message");
-
+			RunServer(&pi, L"7772 UDP get_message");
 			MySocket client = MySocket(CLIENT, "127.0.0.1", 7772, UDP, 1024);
-
 			char buffer[1024] = { 0 };
+			
+			// Act
 			client.GetData(buffer);
+			
+			// Assert
 			Assert::AreEqual(0, strcmp(buffer, "Hello World!"));
 
-			CloseTcpServer(&pi);
+			// Cleanup
+			CloseProcess(&pi);
+			WSACleanup();
+		}
+
+		TEST_METHOD(Constructor_Client_TCP_CreatesTcpClientSocket)
+		{
+			// Arrange
+			WinsockStart();
+
+			// Act
+			MySocket client = MySocket(CLIENT, "127.0.0.1", 7773, TCP, 1024);
+
+			// Assert
+			Assert::AreEqual((int)CLIENT, (int)client.GetType());
+			Assert::AreEqual(std::string("127.0.0.1"), client.GetIPAddr());
+			Assert::AreEqual(7773, client.GetPort());
+
+			// Cleanup
+			WSACleanup();
+		}
+
+		TEST_METHOD(Constructor_Client_UDP_CreatesUdpClientSocket)
+		{
+			// Arrange
+			WinsockStart();
+
+			// Act
+			MySocket client = MySocket(CLIENT, "127.0.0.1", 7774, UDP, 1024);
+
+			// Assert
+			Assert::AreEqual((int)CLIENT, (int)client.GetType());
+			Assert::AreEqual(std::string("127.0.0.1"), client.GetIPAddr());
+			Assert::AreEqual(7774, client.GetPort());
+
+			// Cleanup
+			WSACleanup();
+		}
+
+		TEST_METHOD(Constructor_Server_UDP_CreatesUdpServerSocket)
+		{
+			// Arrange
+			WinsockStart();
+
+			// Act
+			MySocket client = MySocket(SERVER, "127.0.0.1", 7775, UDP, 1024);
+
+			// Assert
+			Assert::AreEqual((int)SERVER, (int)client.GetType());
+			Assert::AreEqual(std::string("127.0.0.1"), client.GetIPAddr());
+			Assert::AreEqual(7775, client.GetPort());
+
+			// Cleanup
+			WSACleanup();
+		}
+
+		TEST_METHOD(Constructor_Server_TCP_CreatesTcpServerSocket)
+		{
+			// Arrange
+			WinsockStart();
+			PROCESS_INFORMATION pi;
+			RunClient(&pi, L"7776 TCP");
+
+			// Act
+			MySocket server = MySocket(SERVER, "127.0.0.1", 7776, TCP, 1024);
+
+			// Assert
+			Assert::AreEqual((int)SERVER, (int)server.GetType());
+			Assert::AreEqual(std::string("127.0.0.1"), server.GetIPAddr());
+			Assert::AreEqual(7776, server.GetPort());
+
+			// Cleanup
+			CloseProcess(&pi);
+			WSACleanup();
+		}
+
+		TEST_METHOD(SendData_Client_TCP_SendsBytesToServer)
+		{
+			// Arrange
+			WinsockStart();
+			PROCESS_INFORMATION pi;
+			RunServer(&pi, L"7777 TCP send_message");
+			MySocket client = MySocket(CLIENT, "127.0.0.1", 7777, TCP, 1024);
+			client.ConnectTCP();
+			char buffer[1024] = { 0 };
+
+			// Act
+			client.SendData("Message from client", 20);
+
+			// Assert
+			client.GetData(buffer);
+			Assert::AreEqual(0, strcmp(buffer, "Confirmed"));
+
+			// Cleanup
+			CloseProcess(&pi);
+			WSACleanup();
+		}
+
+		TEST_METHOD(SendData_Client_UDP_SendsBytesToServer)
+		{
+			// Arrange
+			WinsockStart();
+			//PROCESS_INFORMATION pi;
+			//RunServer(&pi, L"7778 UDP send_message");
+			MySocket client = MySocket(CLIENT, "127.0.0.1", 7778, UDP, 1024);
+			char buffer[1024] = { 0 };
+
+			// Act
+			client.SendData("Message from client", 20);
+			
+			// Assert
+			client.GetData(buffer);
+			Assert::AreEqual(0, strcmp(buffer, "Confirmed"));
+
+			// Cleanup
+			//CloseProcess(&pi);
 			WSACleanup();
 		}
 	};
@@ -73,25 +207,43 @@ void WinsockStart() {
 	}
 }
 
-void RunTcpServer(PROCESS_INFORMATION* pi, std::wstring commands) {
+void RunServer(PROCESS_INFORMATION* pi, std::wstring commands) {
 	STARTUPINFO si = { sizeof(si) };
 
-	// Copy string to modifiable buffer
 	std::wstring command = L"cmd.exe /k \"Socket_ServerTest.exe\"";
+	command.append(L" ");
 	command.append(commands);
 
 	BOOL success = CreateProcess(
-		nullptr,                      // Application name
-		&command[0],                  // Writable command line
+		nullptr,
+		&command[0],
 		nullptr, nullptr,
 		FALSE,
-		CREATE_NEW_CONSOLE,          // Show console
+		CREATE_NEW_CONSOLE,
 		nullptr,
 		nullptr,
 		&si, pi);
 }
 
-void CloseTcpServer(PROCESS_INFORMATION* pi) {
+void RunClient(PROCESS_INFORMATION* pi, std::wstring commands) {
+	STARTUPINFO si = { sizeof(si) };
+
+	std::wstring command = L"cmd.exe /k \"Socket_ClientTest.exe\"";
+	command.append(L" ");
+	command.append(commands);
+
+	BOOL success = CreateProcess(
+		nullptr,
+		&command[0],
+		nullptr, nullptr,
+		FALSE,
+		CREATE_NEW_CONSOLE,
+		nullptr,
+		nullptr,
+		&si, pi);
+}
+
+void CloseProcess(PROCESS_INFORMATION* pi) {
 	TerminateProcess(pi->hProcess, 0);
 	CloseHandle(pi->hProcess);
 	CloseHandle(pi->hThread);
