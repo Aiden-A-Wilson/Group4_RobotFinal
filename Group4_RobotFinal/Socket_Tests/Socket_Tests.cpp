@@ -254,6 +254,50 @@ namespace SocketTests
 			Assert::IsTrue(client.GetType() == CLIENT);
 			CloseProcess(&pi);
 		}
+
+		TEST_METHOD(GetIP_ReturnsCorrectIP)
+		{
+			MySocket client = MySocket(CLIENT, "127.0.0.1", 7786, TCP, 1024);
+
+			std::string expected = "127.0.0.1";
+
+			Assert::AreEqual(client.GetIPAddr(), expected);
+		}
+
+		TEST_METHOD(SetIP_ChangesIP_WhenNotConnected)
+		{
+			MySocket socket = MySocket(CLIENT, "127.0.0.1", 7787, TCP, 1024);
+
+			socket.SetIPAddr("138.212.87.72");
+			std::string expected = "138.212.87.72";
+
+			Assert::AreEqual(socket.GetIPAddr(), expected);
+		}
+
+		TEST_METHOD(SetIP_DoesNotChangeIP_TCP_WhenConnected)
+		{
+			PROCESS_INFORMATION pi;
+			RunServer(&pi, L"7788 TCP");
+
+			MySocket client = MySocket(CLIENT, "127.0.0.1", 7788, TCP, 1024);
+			client.ConnectTCP();
+
+			client.SetIPAddr("138.212.87.74");
+			std::string expected = "127.0.0.1";
+
+			Assert::AreEqual(client.GetIPAddr(), expected);
+			CloseProcess(&pi);
+		}
+
+		TEST_METHOD(SetIP_ChangesIP_UDP_WhenConnected)
+		{
+			MySocket client = MySocket(CLIENT, "127.0.0.1", 7789, UDP, 1024);
+
+			client.SetIPAddr("138.212.87.75");
+			std::string expected = "138.212.87.75";
+
+			Assert::AreEqual(client.GetIPAddr(), expected);
+		}
 	};
 }
 
