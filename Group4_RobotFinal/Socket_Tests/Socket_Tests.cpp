@@ -14,7 +14,7 @@ namespace SocketTests
 	TEST_CLASS(SocketTests)
 	{
 	public:
-		
+
 		TEST_METHOD(Client_TCP_CanConnectToServer)
 		{
 			PROCESS_INFORMATION pi;
@@ -77,7 +77,7 @@ void RunTcpServer(PROCESS_INFORMATION* pi, std::wstring commands) {
 	STARTUPINFO si = { sizeof(si) };
 
 	// Copy string to modifiable buffer
-	std::wstring command = L"cmd.exe /k \"F:\\Conestoga Computer Science\\Semester 4\\Mobile and Networked Systems\\Group4_RobotFinal\\Group4_RobotFinal\\x64\\Debug\\Socket_ServerTest.exe\"";
+	std::wstring command = L"cmd.exe /k \"Socket_ServerTest.exe\"";
 	command.append(commands);
 
 	BOOL success = CreateProcess(
