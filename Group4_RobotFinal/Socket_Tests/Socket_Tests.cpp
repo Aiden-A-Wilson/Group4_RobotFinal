@@ -68,6 +68,7 @@ namespace SocketTests
 			PROCESS_INFORMATION pi;
 			RunServer(&pi, L"7772 UDP get_message");
 			MySocket client = MySocket(CLIENT, "127.0.0.1", 7772, UDP, 1024);
+			client.Bind();
 			char buffer[1024] = { 0 };
 			
 			// Act

@@ -6,6 +6,7 @@
 #pragma comment(lib, "WS2_32.lib")
 #include "PktDef.h"
 #include <iomanip>
+#include "MySocket.h"
 
 using namespace std;
 
@@ -21,41 +22,26 @@ int main()
     }
 
     // Socket
-    SOCKET clientSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (clientSocket == INVALID_SOCKET) {
-        WSACleanup();
-        cout << "Failed to create server socket" << endl;
-        exit(EXIT_FAILURE);
-    }
-
-    struct sockaddr_in serverAddress;
-    serverAddress.sin_family = AF_INET;
-    serverAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
-    serverAddress.sin_port = htons(7780);
+    MySocket client = MySocket(CLIENT, "127.0.0.1", 7777, UDP, 1024);
 
     // Send and Receive
     PktDef packet = PktDef();
     packet.SetPktCount(5);
-    packet.SetCmd(DRIVE);
+    packet.SetCmd(RESPONSE);
     struct DriveBody body = { 0 };
     body.Direction = 1;
     body.Duration = 10;
     body.Speed = 80;
     packet.SetBodyData((char*)&body, BODYSIZE);
 
-    int addressLength = sizeof(serverAddress);
     char* sBuffer = packet.GenPacket();
     int totalSize = packet.GetLength();
-    sendto(clientSocket, sBuffer, totalSize, 0, (struct sockaddr*)&serverAddress, addressLength);
-    cout << "Sent Packet with size: " << totalSize << endl;
+    client.SendData(sBuffer, totalSize);
 
-    for (int i = 0; i < totalSize; ++i) {
-        std::cout << std::hex << std::setw(2) << std::setfill('0')
-            << (static_cast<unsigned int>(static_cast<unsigned char>(sBuffer[i]))) << " ";
-    }
-    std::cout << std::dec << std::endl;
+    char buffer[1024] = { 0 };
+    int bytesRead = client.GetData(buffer);
+    cout << bytesRead << endl;
 
-    closesocket(clientSocket);
     WSACleanup();
 
     return 0;

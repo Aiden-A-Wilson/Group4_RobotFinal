@@ -76,13 +76,6 @@ MySocket::MySocket(SocketType socketType, std::string ip, unsigned int port, Con
 		if (ConnectionSocket == INVALID_SOCKET) {
 			std::cout << "Unable to create ConnectionSocket" << std::endl;
 		}
-
-		if (connectionType == UDP) {
-			int binded = bind(ConnectionSocket, (struct sockaddr*)&SvrAddr, addrLen);
-			if (binded == SOCKET_ERROR) {
-				std::cout << "Unable to bind ConnectionSocket" << std::endl;
-			}
-		}
 	}
 	
 	// Allocate new space for buffer.
@@ -199,6 +192,17 @@ void MySocket::SetType(SocketType type) {
 	}
 	else
 		std::cout << "cannot change type socket is already open or connected" << std::endl;
+}
+
+void MySocket::Bind() {
+	if (connectionType == TCP) {
+		return;
+	}
+
+	int binded = bind(ConnectionSocket, (struct sockaddr*)&SvrAddr, sizeof(SvrAddr));
+	if (binded == SOCKET_ERROR) {
+		std::cout << "Unable to bind ConnectionSocket" << std::endl;
+	}
 }
 
 // Returns whether the socket is able to set values or not.

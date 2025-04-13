@@ -32,6 +32,9 @@ int main(int argc, char* argv[])
     if (conn == TCP) {
         client.ConnectTCP();
     }
+    else {
+        client.Bind();
+    }
 
     if (argc > 3 && strcmp(argv[3], "get_message") == 0) {
         char message[] = "Hello World!";

@@ -14,7 +14,6 @@
 enum CmdType { DRIVE, SLEEP, RESPONSE };
 
 // The Header Information
-#pragma pack(push,1)
 struct Header {
 	unsigned short int PktCount;
 
@@ -26,13 +25,21 @@ struct Header {
 
 	unsigned char Length;
 };
-#pragma pack(pop)
 
 // The Driving Parameters
 struct DriveBody {
 	unsigned char Direction;
 	unsigned char Duration;
 	unsigned char Speed;
+};
+
+struct TelemetryResponse {
+	unsigned short int LastPktCounter;
+	unsigned short int CurrentGrade;
+	unsigned short int HitCount;
+	unsigned char LastCmd;
+	unsigned char LastCmdValue;
+	unsigned char LastCmdSpeed;
 };
 
 class PktDef {	

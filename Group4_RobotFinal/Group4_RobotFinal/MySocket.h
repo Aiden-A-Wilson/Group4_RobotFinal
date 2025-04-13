@@ -116,6 +116,11 @@ public:
 	/// <param name="The socket type to set the socket to."></param>
 	void SetType(SocketType);
 
+	/// <summary>
+	/// Used for binding UDP client sockets if needed (they aren't binded by default like servers).
+	/// </summary>
+	void Bind();
+
 private:
 	/// <summary>
 	/// Returns whether the socket is able to set values or not.
