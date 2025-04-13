@@ -39,6 +39,17 @@ int main(int argc, char* argv[])
         cout << "Sent message to client" << endl;
     }
 
+    if (argc > 3 && strcmp(argv[3], "send_message") == 0) {
+        char buffer[1024] = { 0 };
+        client.GetData(buffer);
+
+        if (strcmp(buffer, "Message from server") == 0) {
+            char message[] = "Confirmed";
+            client.SendData(message, 10);
+            cout << "Sent message to server" << endl;
+        }
+    }
+
     WSACleanup();
     return 0;
 }

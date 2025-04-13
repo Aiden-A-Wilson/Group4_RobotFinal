@@ -298,6 +298,49 @@ namespace SocketTests
 
 			Assert::AreEqual(client.GetIPAddr(), expected);
 		}
+
+		TEST_METHOD(SendData_Server_TCP_SendsBytesToClient)
+		{
+			// Arrange
+			WinsockStart();
+			PROCESS_INFORMATION pi;
+			RunClient(&pi, L"7790 TCP send_message");
+			MySocket server = MySocket(SERVER, "127.0.0.1", 7790, TCP, 1024);
+			char buffer[1024] = { 0 };
+
+			// Act
+			server.SendData("Message from server", 20);
+
+			// Assert
+			server.GetData(buffer);
+			Assert::AreEqual(0, strcmp(buffer, "Confirmed"));
+
+			// Cleanup
+			CloseProcess(&pi);
+			WSACleanup();
+		}
+
+		TEST_METHOD(SendData_Server_UDP_SendsBytesToClient)
+		{
+			// Arrange
+			WinsockStart();
+			PROCESS_INFORMATION pi;
+			RunClient(&pi, L"7791 UDP send_message");
+			Sleep(2000);
+			MySocket server = MySocket(SERVER, "127.0.0.1", 7791, UDP, 1024);
+			char buffer[1024] = { 0 };
+
+			// Act
+			server.SendData("Message from server", 20);
+
+			// Assert
+			server.GetData(buffer);
+			Assert::AreEqual(0, strcmp(buffer, "Confirmed"));
+
+			// Cleanup
+			CloseProcess(&pi);
+			WSACleanup();
+		}
 	};
 }
 
