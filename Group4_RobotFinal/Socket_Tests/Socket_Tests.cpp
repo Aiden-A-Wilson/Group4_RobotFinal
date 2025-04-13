@@ -178,8 +178,9 @@ namespace SocketTests
 		{
 			// Arrange
 			WinsockStart();
-			//PROCESS_INFORMATION pi;
-			//RunServer(&pi, L"7778 UDP send_message");
+			PROCESS_INFORMATION pi;
+			RunServer(&pi, L"7778 UDP send_message");
+			Sleep(2000);
 			MySocket client = MySocket(CLIENT, "127.0.0.1", 7778, UDP, 1024);
 			char buffer[1024] = { 0 };
 
@@ -191,7 +192,7 @@ namespace SocketTests
 			Assert::AreEqual(0, strcmp(buffer, "Confirmed"));
 
 			// Cleanup
-			//CloseProcess(&pi);
+			CloseProcess(&pi);
 			WSACleanup();
 		}
 	};
