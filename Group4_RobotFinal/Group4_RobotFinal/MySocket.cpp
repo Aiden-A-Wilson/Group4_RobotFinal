@@ -1,6 +1,8 @@
 #include "MySocket.h"
 
+// Creates a new network socket with the specified information.
 MySocket::MySocket(SocketType socketType, std::string ip, unsigned int port, ConnectionType connType, unsigned int bufferSize) {
+	// Initialize member variables.
 	MaxSize = bufferSize;
 	if (MaxSize <= 0) {
 		MaxSize = DEFAULT_SIZE;
@@ -22,6 +24,7 @@ MySocket::MySocket(SocketType socketType, std::string ip, unsigned int port, Con
 	LastSender.sin_port = htons(port);
 	LastSenderLength = sizeof(LastSender);
 
+	// Initializing socket(s) based on the socket and connection types.
 	int sock = connectionType == TCP ? SOCK_STREAM : SOCK_DGRAM;
 	int protocol = connectionType == TCP ? IPPROTO_TCP : IPPROTO_UDP;
 
@@ -82,9 +85,11 @@ MySocket::MySocket(SocketType socketType, std::string ip, unsigned int port, Con
 		}
 	}
 	
+	// Allocate new space for buffer.
 	Buffer = new char[bufferSize];
 }
 
+// Cleanup
 MySocket::~MySocket() {
 	if (Buffer != nullptr) {
 		delete[] Buffer;
@@ -94,6 +99,7 @@ MySocket::~MySocket() {
 	closesocket(WelcomeSocket);
 }
 
+// Connections a TCP client to a running TCP server.
 void MySocket::ConnectTCP() {
 	if (connectionType == UDP || bTCPConnect) {
 		return;
@@ -108,6 +114,7 @@ void MySocket::ConnectTCP() {
 	}
 }
 
+// Disconnects a running TCP client from the server it is connected to.
 void MySocket::DisconnectTCP() {
 	if (connectionType == UDP) {
 		return;
@@ -117,10 +124,12 @@ void MySocket::DisconnectTCP() {
 	bTCPConnect = false;
 }
 
+// Returns whether a TCP client or server has performed a three way handshake.
 bool MySocket::IsConnectedTCP() {
 	return bTCPConnect;
 }
 
+// Sends data to its specified server or IP:Port
 void MySocket::SendData(const char* data, int size) {
 	if (connectionType == TCP) {
 		send(ConnectionSocket, data, size, 0);
@@ -130,6 +139,7 @@ void MySocket::SendData(const char* data, int size) {
 	}
 }
 
+// Receives bytes from the sender and stores it into an internal and external buffer.
 int MySocket::GetData(char* RxBuffer) {
 	int bytesWritten = 0;
 	if (connectionType == TCP) {
@@ -145,9 +155,13 @@ int MySocket::GetData(char* RxBuffer) {
 
 	return bytesWritten;
 }
+
+// Gets the IP Address of the socket.
 std::string MySocket::GetIPAddr() {
 	return inet_ntoa(SvrAddr.sin_addr);
 }
+
+// Sets the IP Address of the socket.
 void MySocket::SetIPAddr(std::string ip) {
 	if (CanSet()) {
 		SvrAddr.sin_addr.s_addr = inet_addr(ip.c_str());
@@ -157,6 +171,7 @@ void MySocket::SetIPAddr(std::string ip) {
 	}
 }
 
+// Sets the port of the socket.
 void MySocket::setPort(int port) {
 	if (CanSet()) {
 		Port = port;
@@ -167,14 +182,17 @@ void MySocket::setPort(int port) {
 	}
 }
 
+// Gets the assigned port of the socket.
 int MySocket::GetPort() {
 	return Port;
 }
 
+// Gets the socket type of the socket (Client or Server).
 SocketType MySocket::GetType() {
 	return mySocket;
 }
 
+// Sets the socket type of the socket (Client or Server).
 void MySocket::SetType(SocketType type) {
 	if (CanSet()) {
 		mySocket = type;
@@ -183,6 +201,7 @@ void MySocket::SetType(SocketType type) {
 		std::cout << "cannot change type socket is already open or connected" << std::endl;
 }
 
+// Returns whether the socket is able to set values or not.
 bool MySocket::CanSet()
 {
 	if (connectionType == TCP) {
