@@ -5,6 +5,7 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
+void WinsockStart();
 void RunTcpServer(PROCESS_INFORMATION* pi, std::wstring commands);
 void CloseTcpServer(PROCESS_INFORMATION* pi);
 
@@ -17,7 +18,7 @@ namespace SocketTests
 		TEST_METHOD(Client_TCP_CanConnectToServer)
 		{
 			PROCESS_INFORMATION pi;
-			RunTcpServer(&pi, L" 7770");
+			RunTcpServer(&pi, L" 7770 TCP");
 
 			MySocket client = MySocket(CLIENT, "127.0.0.1", 7770, TCP, 1024);
 			client.ConnectTCP();
@@ -30,7 +31,7 @@ namespace SocketTests
 		TEST_METHOD(Client_TCP_CanGetMessageFromServer)
 		{
 			PROCESS_INFORMATION pi;
-			RunTcpServer(&pi, L" 7771 get_message");
+			RunTcpServer(&pi, L" 7771 TCP get_message");
 
 			MySocket client = MySocket(CLIENT, "127.0.0.1", 7771, TCP, 1024);
 			client.ConnectTCP();
@@ -42,7 +43,34 @@ namespace SocketTests
 
 			CloseTcpServer(&pi);
 		}
+
+		TEST_METHOD(Client_UDP_CanGetMessageFromServer)
+		{
+			WinsockStart();
+
+			PROCESS_INFORMATION pi;
+			RunTcpServer(&pi, L" 7772 UDP get_message");
+
+			MySocket client = MySocket(CLIENT, "127.0.0.1", 7772, UDP, 1024);
+
+			char buffer[1024] = { 0 };
+			client.GetData(buffer);
+			Assert::AreEqual(0, strcmp(buffer, "Hello World!"));
+
+			CloseTcpServer(&pi);
+			WSACleanup();
+		}
 	};
+}
+
+void WinsockStart() {
+	// WSA Startup
+	WSADATA wsaData;
+	int startup = WSAStartup(MAKEWORD(2, 2), &wsaData);
+	if (startup != 0) {
+		std::cout << "ERROR: Failed to start WSA." << std::endl;
+		exit(EXIT_FAILURE);
+	}
 }
 
 void RunTcpServer(PROCESS_INFORMATION* pi, std::wstring commands) {

@@ -16,9 +16,17 @@ int main(int argc, char* argv[])
         exit(EXIT_FAILURE);
     }
 
-    MySocket server = MySocket(SERVER, "127.0.0.1", stoi(argv[1]), TCP, 1024);
+    ConnectionType conn = TCP;
+    if (strcmp(argv[2], "TCP") == 0) {
+        conn = TCP;
+    }
+    else if (strcmp(argv[2], "UDP") == 0) {
+        conn = UDP;
+    }
 
-    if (server.IsConnectedTCP() && argc > 1 && strcmp(argv[2], "get_message") == 0) {
+    MySocket server = MySocket(SERVER, "127.0.0.1", stoi(argv[1]), conn, 1024);
+
+    if (argc > 3 && strcmp(argv[3], "get_message") == 0) {
         char message[] = "Hello World!";
         server.SendData(message, 13);
         cout << "Sent message to client" << endl;
