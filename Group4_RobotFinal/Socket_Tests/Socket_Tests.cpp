@@ -195,6 +195,65 @@ namespace SocketTests
 			CloseProcess(&pi);
 			WSACleanup();
 		}
+
+		TEST_METHOD(GetPort_ReturnsCorrectPort)
+		{
+			MySocket client = MySocket(CLIENT, "127.0.0.1", 7779, TCP, 1024);
+			Assert::AreEqual(7779, client.GetPort());
+		}
+
+		TEST_METHOD(SetPort_ChangesPort_WhenNotConnected)
+		{
+			MySocket client = MySocket(CLIENT, "127.0.0.1", 7780, TCP, 1024);
+
+			client.setPort(23000);
+			Assert::AreEqual(23000, client.GetPort());
+		}
+
+		TEST_METHOD(SetPort_DoesNotChangePort_WhenConnected)
+		{
+			PROCESS_INFORMATION pi;
+			RunServer(&pi, L"7781 TCP");
+			MySocket client = MySocket(CLIENT, "127.0.0.1", 7781, TCP, 1024);
+
+			client.ConnectTCP();
+			client.setPort(9999);
+
+			Assert::AreEqual(7781, client.GetPort());
+			CloseProcess(&pi);
+		}
+
+		TEST_METHOD(GetType_ReturnsCorrectType_Client)
+		{
+			MySocket client = MySocket(CLIENT, "127.0.0.1", 7782, TCP, 1024);
+			Assert::IsTrue(client.GetType() == CLIENT);
+		}
+
+		TEST_METHOD(GetType_ReturnsCorrectType_Server)
+		{
+			MySocket server = MySocket(SERVER, "127.0.0.1", 7783, UDP, 1024);
+			Assert::IsTrue(server.GetType() == SERVER);
+		}
+
+		TEST_METHOD(SetType_ChangesType_WhenNotConnected)
+		{
+			MySocket socket = MySocket(CLIENT, "127.0.0.1", 7784, TCP, 1024);
+			socket.SetType(SERVER);
+			Assert::IsTrue(socket.GetType() == SERVER);
+		}
+
+		TEST_METHOD(SetType_DoesNotChangeType_WhenConnected)
+		{
+			PROCESS_INFORMATION pi;
+			RunServer(&pi, L"7785 TCP");
+			MySocket client = MySocket(CLIENT, "127.0.0.1", 7785, TCP, 1024);
+
+			client.ConnectTCP();
+			client.SetType(SERVER);
+
+			Assert::IsTrue(client.GetType() == CLIENT);
+			CloseProcess(&pi);
+		}
 	};
 }
 
