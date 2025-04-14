@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Control Panel</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background-color: #f0f0f0;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .section {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      box-sizing: border-box;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Control Panel</h2>
+
+    <div class="section">
+      <label for="ip">IP Address:</label>
+      <input type="text" id="ip" placeholder="e.g. 192.168.1.1" />
+
+      <label for="port">Port:</label>
+      <input type="text" id="port" placeholder="e.g. 8080" />
+
+      <button id="connectBtn">Connect</button>
+    </div>
+
+    <div class="section">
+      <label for="mode">Mode:</label>
+      <select id="mode">
+        <option value="drive">Drive</option>
+        <option value="sleep">Sleep</option>
+        <option value="status">Status</option>
+      </select>
+    </div>
+
+    <div class="section">
+      <label for="direction">Direction:</label>
+      <input type="text" id="direction" placeholder="e.g. 1" />
+
+      <label for="duration">Duration (seconds):</label>
+      <input type="text" id="duration" placeholder="e.g. 5" />
+
+      <label for="speed">Speed (%):</label>
+      <input type="text" id="speed" placeholder="e.g. 80" />
+
+      <button id="sendBtn">Send Data</button>
+    </div>
+  </div>
+</body>
+</html>

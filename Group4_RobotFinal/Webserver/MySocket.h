@@ -1,9 +1,12 @@
 #pragma once
 
-#include <windows.networking.sockets.h>
 #include <iostream>
 #include <string>
 #include <cstring> 
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #define DEFAULT_SIZE 1024
 
@@ -23,8 +26,8 @@ enum ConnectionType {TCP, UDP};
 class MySocket
 {
 	char* Buffer;
-	SOCKET WelcomeSocket;
-	SOCKET ConnectionSocket;
+	int WelcomeSocket;
+	int ConnectionSocket;
 	struct sockaddr_in SvrAddr;
 	SocketType mySocket;
 	ConnectionType connectionType;
@@ -33,7 +36,7 @@ class MySocket
 	bool bTCPConnect;
 	int MaxSize;
 	struct sockaddr_in LastSender;
-	int LastSenderLength;
+	socklen_t LastSenderLength;
 
 public:
 	/// <summary>
