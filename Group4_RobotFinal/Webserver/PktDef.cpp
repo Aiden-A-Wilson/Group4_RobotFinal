@@ -144,13 +144,17 @@ bool PktDef::CheckCRC(char* src, int Size) {
 	calculatedCrc += std::bitset<4>(pkt.Head.Padding).count();
 	calculatedCrc += std::bitset<8>(pkt.Head.Length).count();
 
-	// Adds the bits from the data is there are any.
+	// Adds the bits from the data if there are any.
 	if (pkt.Data != nullptr) {
-		struct DriveBody body = { 0 };
-		memcpy(&body, pkt.Data, sizeof(struct DriveBody));
-		calculatedCrc += std::bitset<8>(body.Direction).count();
-		calculatedCrc += std::bitset<8>(body.Duration).count();
-		calculatedCrc += std::bitset<8>(body.Speed).count();
+		std::bitset<128> bits;
+		for (int i = 0; i < bodySize; ++i) {
+			for (int j = 0; j < 8; ++j) {
+				bool bit = (pkt.Data[i] >> j) & 1;
+				bits[i * 8 + j] = bit;
+			}
+		}
+
+		calculatedCrc += bits.count();
 	}
 
 	delete[] pkt.Data;
