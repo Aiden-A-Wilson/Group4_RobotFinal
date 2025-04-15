@@ -8,6 +8,7 @@ PktDef::PktDef() {
 	Packet.Data = nullptr;
 	Packet.CRC = 0;
 	RawBuffer = nullptr;
+	Packet.Head.Length = HEADERSIZE + sizeof(Packet.CRC);
 }
 // Constructor: initializes the packet based on a source
 PktDef::PktDef(char* src) {

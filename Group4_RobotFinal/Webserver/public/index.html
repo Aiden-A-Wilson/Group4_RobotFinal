@@ -56,30 +56,85 @@
       <label for="port">Port:</label>
       <input type="text" id="port" placeholder="e.g. 8080" />
 
-      <button id="connectBtn">Connect</button>
+      <button id="connectBtn" onclick="Bind()">Connect</button>
     </div>
 
     <div class="section">
       <label for="mode">Mode:</label>
       <select id="mode">
-        <option value="drive">Drive</option>
-        <option value="sleep">Sleep</option>
-        <option value="status">Status</option>
+        <option value="DRIVE" selected>Drive</option>
+        <option value="SLEEP">Sleep</option>
+        <option value="STATUS">Status</option>
       </select>
     </div>
 
     <div class="section">
       <label for="direction">Direction:</label>
-      <input type="text" id="direction" placeholder="e.g. 1" />
+      <input type="text" id="direction" placeholder="e.g. 1" value="0"/>
 
       <label for="duration">Duration (seconds):</label>
-      <input type="text" id="duration" placeholder="e.g. 5" />
+      <input type="text" id="duration" placeholder="e.g. 5" value="0"/>
 
       <label for="speed">Speed (%):</label>
-      <input type="text" id="speed" placeholder="e.g. 80" />
+      <input type="text" id="speed" placeholder="e.g. 80" value="0"/>
 
-      <button id="sendBtn">Send Data</button>
+      <button id="sendBtn" onclick="Send()">Send Data</button>
     </div>
   </div>
+
+  <script>
+    function Bind() {
+      const ip = document.getElementById("ip").value;
+      const port = document.getElementById("port").value;
+
+      fetch(`/connect/${ip}/${port}`, {
+        method: "POST",
+      })
+      .then(response => response.text())
+      .then(data => {
+        console.log("Server response:", data);
+        alert(data);
+      })
+      .catch(error => {
+        console.error("Error:", error);
+      });
+    }
+
+    function Send() {
+      const command = document.getElementById("mode").value;
+      const direction = document.getElementById("direction").value;
+      const duration = document.getElementById("duration").value;
+      const speed = document.getElementById("speed").value;
+
+      const params = new URLSearchParams({
+        command: command,
+        direction: direction,
+        duration: duration,
+        speed: speed
+      });
+
+      let route = "";
+      let method = "";
+      if (command == "STATUS") {
+        route = "/telemetry_request";
+        method = "GET";
+      } else {
+        route = "/telecommand";
+        method = "PUT";
+      }
+
+      fetch(`${route}?${params.toString()}`, {
+        method: method
+      })
+      .then(response => response.text())
+      .then(data => {
+        console.log("Server response:", data);
+        alert(data);
+      })
+      .catch(error => {
+        console.error("Error sending telemetry request:", error);
+      });
+    }
+  </script>
 </body>
 </html>
