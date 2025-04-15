@@ -12,6 +12,7 @@ using namespace crow;
 void SendFile(response& res, string fileName, string contentType);
 void SendHtml(response& res, string fileName);
 int SendAndReceive(MySocket* socket, PktDef& packet, char* rcvBuffer);
+void SendStringToSite(response& res, string message, int code);
 
 int main() {
     SimpleApp app;
@@ -44,8 +45,7 @@ int main() {
 
         string command = req.url_params.get("command");
         if (command.empty()) {
-            res.code = 404;
-			res.end();
+            SendStringToSite(res, "Invalid command query", 404);
 			return;
         }
 
@@ -58,8 +58,7 @@ int main() {
             auto duration = req.url_params.get("duration");
             auto speed = req.url_params.get("speed");
             if (!direction || !duration || !speed) {
-                res.code = 404;
-                res.end();
+                SendStringToSite(res, "Invalid query parameter(s)", 404);
                 return;
             }
 
@@ -77,38 +76,28 @@ int main() {
             packet.SetCmd(SLEEP);
             packet.SetPktCount(packetCount);
             bytesReceived = SendAndReceive(socket, packet, RxBuffer);
-            res.code = 200;
-            res.write("Program ended");
-            res.end();
+            SendStringToSite(res, "Program ended", 200);
             return;
         }
 
         if (bytesReceived > 0) {
             PktDef received = PktDef(RxBuffer);
             if (!received.CheckCRC(received.GenPacket(), received.GetLength())) {
-                res.code = 404;
-                res.write("CRC validation failure");
-                res.end();
+                SendStringToSite(res, "CRC validation failure", 404);
                 return;
             }
 
             if (!received.GetAck()) {
-                res.code = 404;
-                res.write("Nack");
-                res.end();
+                SendStringToSite(res, "Nack", 404);
                 return;
             }
 
             packetCount = received.GetPktCount();
             cout << "Packet Acknowledged" << endl;
-            res.code = 200;
-            res.write("Packet Acknowledged");
+            SendStringToSite(res, "Packet Acknowledged", 200);
         } else {
-            res.code = 404;
-            res.write("No bytes received");
+            SendStringToSite(res, "No bytes received", 404);
         }
-
-        res.end();
     });
 
     CROW_ROUTE(app, "/telemetry_request").methods(HTTPMethod::GET)
@@ -129,16 +118,12 @@ int main() {
         if (bytesReceived > 0) {
             PktDef received = PktDef(RxBuffer);
             if (!received.CheckCRC(received.GenPacket(), received.GetLength())) {
-                res.code = 404;
-                res.write("CRC validation failure");
-                res.end();
+                SendStringToSite(res, "CRC validation failure", 404);
                 return;
             }
 
             if (!received.GetAck()) {
-                res.code = 404;
-                res.write("Nack");
-                res.end();
+                SendStringToSite(res, "Nack", 404);
                 return;
             }
 
@@ -146,9 +131,7 @@ int main() {
             int telemBytes = socket->GetData(RxBuffer);
 
             if (telemBytes <= 0) {
-                res.code = 404;
-                res.write("No bytes received for telem packet.");
-                res.end();
+                SendStringToSite(res, "No bytes received for telem packet.", 404);
                 return;
             }
             
@@ -158,7 +141,7 @@ int main() {
             packetCount = telemPacket.GetPktCount();
             
             ostringstream stream = ostringstream();
-            stream << "Packet Acknowledged" << "\n";
+            stream << "Packet Acknowledged\n";
             stream << "Last Packet Counter: " << to_string(telem.LastPktCounter) << "\n";
             stream << "Current Grade: " << to_string(telem.CurrentGrade) << "\n";
             stream << "Hit Count: " << to_string(telem.HitCount) << "\n";
@@ -166,14 +149,10 @@ int main() {
             stream << "Last Command Value: " << to_string(telem.LastCmdValue) << "\n";
             stream << "Last Command Speed: " << to_string(telem.LastCmdSpeed) << "\n";
             
-            res.code = 200;
-            res.write(stream.str());
+            SendStringToSite(res, stream.str(), 200);
         } else {
-            res.code = 404;
-            res.write("No bytes received");
+            SendStringToSite(res, "No bytes received", 404);
         }
-
-        res.end();
     });
 
     app.port(7770).multithreaded().run();
@@ -208,4 +187,10 @@ int SendAndReceive(MySocket* socket, PktDef& packet, char* rcvBuffer) {
     socket->SendData(packet.GenPacket(), packet.GetLength());
     int bytesReceived = socket->GetData(rcvBuffer);
     return bytesReceived;
+}
+
+void SendStringToSite(response& res, string message, int code) {
+    res.code = code;
+    res.write(message);
+    res.end();
 }
