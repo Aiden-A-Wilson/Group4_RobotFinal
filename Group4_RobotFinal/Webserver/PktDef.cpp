@@ -137,11 +137,11 @@ bool PktDef::CheckCRC(char* src, int Size) {
 
 	// Add all the (1) bits from all fields.
 	calculatedCrc += std::bitset<8>(pkt.Head.PktCount).count();
-	calculatedCrc += std::bitset<4>(pkt.Head.Drive).count();
-	calculatedCrc += std::bitset<4>(pkt.Head.Status).count();
-	calculatedCrc += std::bitset<4>(pkt.Head.Sleep).count();
-	calculatedCrc += std::bitset<4>(pkt.Head.Ack).count();
-	calculatedCrc += std::bitset<4>(pkt.Head.Padding).count();
+	calculatedCrc += std::bitset<8>(pkt.Head.Drive).count();
+	calculatedCrc += std::bitset<8>(pkt.Head.Status).count();
+	calculatedCrc += std::bitset<8>(pkt.Head.Sleep).count();
+	calculatedCrc += std::bitset<8>(pkt.Head.Ack).count();
+	calculatedCrc += std::bitset<8>(pkt.Head.Padding).count();
 	calculatedCrc += std::bitset<8>(pkt.Head.Length).count();
 
 	// Adds the bits from the data if there are any.
@@ -167,20 +167,25 @@ void PktDef::CalcCRC() {
 
 	// Add all the (1) bits from all fields.
 	crc += std::bitset<8>(Packet.Head.PktCount).count();
-	crc += std::bitset<4>(Packet.Head.Drive).count();
-	crc += std::bitset<4>(Packet.Head.Status).count();
-	crc += std::bitset<4>(Packet.Head.Sleep).count();
-	crc += std::bitset<4>(Packet.Head.Ack).count();
-	crc += std::bitset<4>(Packet.Head.Padding).count();
+	crc += std::bitset<8>(Packet.Head.Drive).count();
+	crc += std::bitset<8>(Packet.Head.Status).count();
+	crc += std::bitset<8>(Packet.Head.Sleep).count();
+	crc += std::bitset<8>(Packet.Head.Ack).count();
+	crc += std::bitset<8>(Packet.Head.Padding).count();
 	crc += std::bitset<8>(Packet.Head.Length).count();
 
 	// Adds the bits from the data is there are any.
 	if (Packet.Data != nullptr) {
-		struct DriveBody body = { 0 };
-		memcpy(&body, Packet.Data, sizeof(struct DriveBody));
-		crc += std::bitset<8>(body.Direction).count();
-		crc += std::bitset<8>(body.Duration).count();
-		crc += std::bitset<8>(body.Speed).count();
+		int bodySize = Packet.Head.Length - HEADERSIZE - sizeof(Packet.CRC);
+		std::bitset<128> bits;
+		for (int i = 0; i < bodySize; ++i) {
+			for (int j = 0; j < 8; ++j) {
+				bool bit = (Packet.Data[i] >> j) & 1;
+				bits[i * 8 + j] = bit;
+			}
+		}
+
+		crc += bits.count();
 	}
 
 	Packet.CRC = crc;

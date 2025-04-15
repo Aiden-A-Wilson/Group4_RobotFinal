@@ -85,6 +85,13 @@ int main() {
 
         if (bytesReceived > 0) {
             PktDef received = PktDef(RxBuffer);
+            if (!received.CheckCRC(received.GenPacket(), received.GetLength())) {
+                res.code = 404;
+                res.write("CRC validation failure");
+                res.end();
+                return;
+            }
+
             if (!received.GetAck()) {
                 res.code = 404;
                 res.write("Nack");
@@ -121,6 +128,13 @@ int main() {
 
         if (bytesReceived > 0) {
             PktDef received = PktDef(RxBuffer);
+            if (!received.CheckCRC(received.GenPacket(), received.GetLength())) {
+                res.code = 404;
+                res.write("CRC validation failure");
+                res.end();
+                return;
+            }
+
             if (!received.GetAck()) {
                 res.code = 404;
                 res.write("Nack");
