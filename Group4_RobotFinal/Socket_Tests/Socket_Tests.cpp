@@ -200,6 +200,8 @@ namespace SocketTests
 		TEST_METHOD(GetPort_ReturnsCorrectPort)
 		{
 			MySocket client = MySocket(CLIENT, "127.0.0.1", 7779, TCP, 1024);
+
+			//assert
 			Assert::AreEqual(7779, client.GetPort());
 		}
 
@@ -207,19 +209,23 @@ namespace SocketTests
 		{
 			MySocket client = MySocket(CLIENT, "127.0.0.1", 7780, TCP, 1024);
 
+			//assert
 			client.setPort(23000);
 			Assert::AreEqual(23000, client.GetPort());
 		}
 
 		TEST_METHOD(SetPort_DoesNotChangePort_WhenConnected)
 		{
+			//arrange
 			PROCESS_INFORMATION pi;
 			RunServer(&pi, L"7781 TCP");
 			MySocket client = MySocket(CLIENT, "127.0.0.1", 7781, TCP, 1024);
 
+			//act
 			client.ConnectTCP();
 			client.setPort(9999);
 
+			//assert
 			Assert::AreEqual(7781, client.GetPort());
 			CloseProcess(&pi);
 		}
@@ -227,12 +233,16 @@ namespace SocketTests
 		TEST_METHOD(GetType_ReturnsCorrectType_Client)
 		{
 			MySocket client = MySocket(CLIENT, "127.0.0.1", 7782, TCP, 1024);
+
+			//assert
 			Assert::IsTrue(client.GetType() == CLIENT);
 		}
 
 		TEST_METHOD(GetType_ReturnsCorrectType_Server)
 		{
 			MySocket server = MySocket(SERVER, "127.0.0.1", 7783, UDP, 1024);
+
+			//assert
 			Assert::IsTrue(server.GetType() == SERVER);
 		}
 
@@ -240,63 +250,80 @@ namespace SocketTests
 		{
 			MySocket socket = MySocket(CLIENT, "127.0.0.1", 7784, TCP, 1024);
 			socket.SetType(SERVER);
+
+			//assert
 			Assert::IsTrue(socket.GetType() == SERVER);
 		}
 
 		TEST_METHOD(SetType_DoesNotChangeType_WhenConnected)
 		{
+			//arrange
 			PROCESS_INFORMATION pi;
 			RunServer(&pi, L"7785 TCP");
 			MySocket client = MySocket(CLIENT, "127.0.0.1", 7785, TCP, 1024);
 
+			//act
 			client.ConnectTCP();
 			client.SetType(SERVER);
 
+			//assert
 			Assert::IsTrue(client.GetType() == CLIENT);
 			CloseProcess(&pi);
 		}
 
 		TEST_METHOD(GetIP_ReturnsCorrectIP)
 		{
+			//arrange
 			MySocket client = MySocket(CLIENT, "127.0.0.1", 7786, TCP, 1024);
 
+			//act
 			std::string expected = "127.0.0.1";
 
+			//assert
 			Assert::AreEqual(client.GetIPAddr(), expected);
 		}
 
 		TEST_METHOD(SetIP_ChangesIP_WhenNotConnected)
 		{
+			//arrange
 			MySocket socket = MySocket(CLIENT, "127.0.0.1", 7787, TCP, 1024);
 
+			//act
 			socket.SetIPAddr("138.212.87.72");
 			std::string expected = "138.212.87.72";
 
+			//assert
 			Assert::AreEqual(socket.GetIPAddr(), expected);
 		}
 
 		TEST_METHOD(SetIP_DoesNotChangeIP_TCP_WhenConnected)
 		{
+			//arrange
 			PROCESS_INFORMATION pi;
 			RunServer(&pi, L"7788 TCP");
 
+			//act
 			MySocket client = MySocket(CLIENT, "127.0.0.1", 7788, TCP, 1024);
 			client.ConnectTCP();
 
 			client.SetIPAddr("138.212.87.74");
 			std::string expected = "127.0.0.1";
 
+			//assert
 			Assert::AreEqual(client.GetIPAddr(), expected);
 			CloseProcess(&pi);
 		}
 
 		TEST_METHOD(SetIP_ChangesIP_UDP_WhenConnected)
 		{
+			//arrange
 			MySocket client = MySocket(CLIENT, "127.0.0.1", 7789, UDP, 1024);
 
+			//act
 			client.SetIPAddr("138.212.87.75");
 			std::string expected = "138.212.87.75";
 
+			//assert
 			Assert::AreEqual(client.GetIPAddr(), expected);
 		}
 

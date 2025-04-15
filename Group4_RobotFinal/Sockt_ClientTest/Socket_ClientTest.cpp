@@ -19,6 +19,8 @@ int main(int argc, char* argv[])
 
     Sleep(1000);
 
+    // Determine connection type (TCP or UDP)
+
     ConnectionType conn = TCP;
     if (strcmp(argv[2], "TCP") == 0) {
         conn = TCP;
@@ -27,8 +29,10 @@ int main(int argc, char* argv[])
         conn = UDP;
     }
 
+    // Create a client socket with the given port, IP, and connection type
     MySocket client = MySocket(CLIENT, "127.0.0.1", stoi(argv[1]), conn, 1024);
 
+    // Connect or bind based on connection type
     if (conn == TCP) {
         client.ConnectTCP();
     }
@@ -36,23 +40,26 @@ int main(int argc, char* argv[])
         client.Bind();
     }
 
+    // If "get_message" command is provided, send a message
     if (argc > 3 && strcmp(argv[3], "get_message") == 0) {
         char message[] = "Hello World!";
         client.SendData(message, 13);
         cout << "Sent message to client" << endl;
     }
 
+    // If "send_message" command is provided, receive and respond
     if (argc > 3 && strcmp(argv[3], "send_message") == 0) {
         char buffer[1024] = { 0 };
         client.GetData(buffer);
 
+        // If the message received matches expected string, send confirmation
         if (strcmp(buffer, "Message from server") == 0) {
             char message[] = "Confirmed";
             client.SendData(message, 10);
             cout << "Sent message to server" << endl;
         }
     }
-
+    // Cleanup
     WSACleanup();
     return 0;
 }
