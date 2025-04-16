@@ -105,7 +105,7 @@ int main() {
                 return;
             }
 
-            packetCount = received.GetPktCount();
+            packetCount = received.GetPktCount() + 1;
             cout << "Packet Acknowledged" << endl;
             SendStringToSite(res, "Packet Acknowledged", 200);
         } else {
@@ -158,7 +158,7 @@ int main() {
             PktDef telemPacket = PktDef(RxBuffer);
             struct TelemetryResponse telem = { 0 };
             memcpy(&telem, telemPacket.GetBodyData(), sizeof(telem));
-            packetCount = telemPacket.GetPktCount();
+            packetCount = telemPacket.GetPktCount() + 1;
             
             // Format telemetry data 
             ostringstream stream = ostringstream();
